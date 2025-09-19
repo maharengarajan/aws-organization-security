@@ -16,6 +16,13 @@ output "cloudtrail_logs_bucket" {
 }
 
 output "sns_topic_name" {
-  value = aws_sns_topic.security_monitoring_alerts.name
-  
+  value = aws_sns_topic.security_monitoring_alerts.name  
+}
+
+output "s3_bucket_name" {
+  value = aws_s3_bucket.cloudtrail_logs.bucket
+}
+
+output "cloudtrail_name" {
+  value = aws_cloudtrail.organization_trail.name
 }

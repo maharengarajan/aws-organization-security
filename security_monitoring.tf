@@ -55,3 +55,20 @@ resource "aws_s3_bucket_policy" "cloudtrail_logs_policy" {
   
 }
 
+# CloudTrail for monitoring IAM activities
+resource "aws_cloudtrail" "organization_trail" {
+  name = "organization-trail"
+  s3_bucket_name = aws_s3_bucket.cloudtrail_logs.bucket
+  
+  event_selector {
+    read_write_type = "All"
+    include_management_events = true
+    exclude_management_event_sources = []
+
+    data_resource {
+      type = "AWS::S3::Object"
+      values = ["arn:aws:s3:::"]
+    }
+  }
+  depends_on = [ aws_s3_bucket_policy.cloudtrail_logs_policy ]
+}
