@@ -26,3 +26,11 @@ output "s3_bucket_name" {
 output "cloudtrail_name" {
   value = aws_cloudtrail.organization_trail.name
 }
+
+output "billing_bucket_name" {
+  value = aws_s3_bucket.billing_reports_bucket.bucket
+}
+
+output "ec2_instance_id" {
+  value = aws_instance.test_instance.id  
+}
