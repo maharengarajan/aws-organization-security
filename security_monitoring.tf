@@ -9,3 +9,49 @@ resource "aws_sns_topic_subscription" "email_notification" {
   endpoint  = var.notification_email  
 }
 
+# S3 bucket for cloudtrail logs
+resource "aws_s3_bucket" "cloudtrail_logs" {
+  bucket = "cloudtrail-logs-${random_string.bucket_suffix.result}"
+  force_destroy = true
+}
+
+resource "random_string" "bucket_suffix" {
+  length  = 8
+  upper   = false
+  special = false
+}
+
+resource "aws_s3_bucket_policy" "cloudtrail_logs_policy" {
+  bucket = aws_s3_bucket.cloudtrail_logs.id
+
+    policy = jsonencode({
+        Version = "2012-10-17"
+        Statement = [
+        {
+            Sid = "AWSCloudTrailAclCheck"
+            Effect = "Allow"
+            Principal = {
+            Service = "cloudtrail.amazonaws.com"
+            }
+            Action = "s3:GetBucketAcl"
+            Resource = aws_s3_bucket.cloudtrail_logs.arn
+        },
+        {
+            Sid = "AWSCloudTrailWrite"
+            Effect = "Allow"
+            Principal = {
+            Service = "cloudtrail.amazonaws.com"
+            }
+            Action = "s3:PutObject"
+            Resource = "${aws_s3_bucket.cloudtrail_logs.arn}/*"
+            Condition = {
+            StringEquals = {
+                "s3:x-amz-acl" = "bucket-owner-full-control"
+            }
+            }
+        }
+        ]
+    })
+  
+}
+
