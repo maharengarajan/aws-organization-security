@@ -91,3 +91,39 @@ resource "aws_guardduty_detector" "main" {
  }
 }
 
+# Cloudwatch event rule for GuardDuty findings
+resource "aws_cloudwatch_event_rule" "guardduty_finding_rule" {
+  name        = "guardduty-finding-rule"
+  description = "Rule to capture GuardDuty findings"
+  event_pattern = jsonencode({
+    source = ["aws.guardduty"]
+    detail-type = ["GuardDuty Finding"]
+  })
+}
+
+# Cloudwatch event target for GuardDuty findings
+resource "aws_cloudwatch_event_target" "guardduty_finding_target" {
+  rule      = aws_cloudwatch_event_rule.guardduty_finding_rule.name
+  target_id = "sendToSNS"
+  arn       = aws_sns_topic.security_monitoring_alerts.arn
+}
+
+# SNS Topic Policy to allow CloudWatch Events to publish to SNS
+resource "aws_sns_topic_policy" "sns_policy" {
+  arn = aws_sns_topic.security_monitoring_alerts.arn
+  
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Principal = {
+          Service = "events.amazonaws.com"
+        }
+        Action = "sns:Publish"
+        Resource = aws_sns_topic.security_monitoring_alerts.arn
+      }
+    ]
+  })
+}
+
