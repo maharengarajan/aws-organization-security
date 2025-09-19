@@ -72,3 +72,22 @@ resource "aws_cloudtrail" "organization_trail" {
   }
   depends_on = [ aws_s3_bucket_policy.cloudtrail_logs_policy ]
 }
+
+# GuardDuty for threat detection
+resource "aws_guardduty_detector" "main" {
+  enable = true
+  
+  datasources {
+    s3_logs {
+      enable = true
+    }
+    malware_protection {
+      scan_ec2_instance_with_findings {
+        ebs_volumes {
+          enable = true
+        }
+      }
+    }
+ }
+}
+
